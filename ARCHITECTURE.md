@@ -1,29 +1,147 @@
-# PrivyAgent System Architecture
+# 🏗 PrivyAgent Architecture
 
-## 1. Problem Statement
-**The Challenge:** Current AI agents operate with "all-or-nothing" access. They typically require full, unmasked access to user credentials (API keys, passwords, personal addresses) to perform tasks. This creates a massive attack surface: if the AI is prompt-injected or compromised, the attacker gains full control over the user's digital identity and financial assets.
+## Executive Summary
 
-**The Solution:** PrivyAgent implements a **Hardened Separation of Concerns**. We decouple the **Reasoning Engine** (LLM) from the **Execution Enclave** (TEE). The LLM processes natural language intents, while the TEE holds the "Vault" authority, ensuring that sensitive data is never accessible to the LLM's reasoning layer.
+PrivyAgent is built around a simple principle:
 
-## 2. System Architecture
-Our architecture follows a **Three-Layer Security Model**:
+> Intelligence should not imply authority.
 
-### Layer 1: Intelligent Reasoning (Agent Layer)
-* **Purpose:** Intent extraction & classification.
-* **Tech:** A multi-AI cascade routing system (Gemini → Groq → Local).
-* **Mechanism:** Converts natural language (e.g., "Order me a sandwich") into a structured, sanitized JSON intent. It is strictly limited to metadata; it never touches raw credentials.
+Modern AI agents combine reasoning and execution into a single trust boundary.
 
-### Layer 2: Attestation & Orchestration (TEE Vault)
-* **Purpose:** Verifiable execution & trust.
-* **Tech:** Terminal 3 TEE (Trusted Execution Environment).
-* **Mechanism:** The vault performs **Remote Attestation**. It verifies that the incoming intent is within the user's defined "Passport Policy" (e.g., spend caps, approved scopes).
+PrivyAgent separates them.
 
-### Layer 3: Immutable Audit Trail
-* **Purpose:** Verifiability & compliance.
-* **Mechanism:** Every transaction generates a cryptographically signed log entry. This creates a verifiable history of what the agent was authorized to do, preventing "ghost" transactions.
+The model reasons.
 
-## 3. Resilience Cascade Logic
-To ensure 99.9% uptime, we implemented a **Fail-Fast Routing System**:
-1. **Primary:** Google Gemini API (High-performance reasoning).
-2. **Failover:** Groq Cloud Llama-3 (Instant high-speed inference).
-3. **Last-Resort:** Hardcoded Local Safety Logic (Guarantees execution even if both remote APIs are unavailable).
+The enclave decides.
+
+---
+
+# Security Model
+
+Traditional Agent:
+
+```text
+User → AI → Credentials → Action
+```
+
+Single point of failure.
+
+---
+
+PrivyAgent:
+
+```text
+User
+  │
+  ▼
+AI Reasoning Layer
+  │
+  ▼
+TEE Verification Layer
+  │
+  ▼
+Execution
+  │
+  ▼
+Signed Audit Trail
+```
+
+Multiple trust boundaries.
+
+---
+
+# Layer 1 — Intelligent Reasoning
+
+Purpose:
+
+* Understand intent
+* Extract structured actions
+* Generate safe execution requests
+
+Models:
+
+1. Gemini
+2. Groq
+3. Local Fallback
+
+Output Example:
+
+```json
+{
+  "action": "purchase",
+  "item": "sandwich",
+  "merchant": "Subway"
+}
+```
+
+No credentials are ever exposed.
+
+---
+
+# Layer 2 — Trusted Execution Environment
+
+Purpose:
+
+Protect secrets.
+
+Capabilities:
+
+* Policy enforcement
+* Secret isolation
+* Remote attestation
+* Scope verification
+
+Example Policies:
+
+* Daily spending limits
+* Approved vendors
+* Geographic restrictions
+
+If policy checks fail:
+
+Execution stops.
+
+---
+
+# Layer 3 — Audit & Verification
+
+Every execution generates:
+
+* Timestamp
+* Proof ID
+* Action metadata
+* Signature
+
+This enables complete auditability.
+
+---
+
+# Resilience Cascade
+
+Provider outages should never disable an autonomous agent.
+
+Routing Strategy:
+
+```text
+Gemini
+   ↓
+Groq
+   ↓
+Local Logic
+```
+
+Result:
+
+* Improved uptime
+* Reduced dependency risk
+* Graceful degradation
+
+---
+
+# Core Philosophy
+
+The AI should understand intent.
+
+The vault should control authority.
+
+The user should retain trust.
